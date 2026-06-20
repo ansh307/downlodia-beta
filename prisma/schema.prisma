@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String
+  products Product[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id              String    @id
+  dodoProductId String? @unique
+  title           String
+  isFeatured      Boolean   @default(false)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  desc            String?   // Short description
+  brief           String?   // Longer description
+  price           Int       // Price in dollars (e.g., 49)
+  originalPrice   Int      // Original price in dollars
+  discount        Int      // Discount percentage
+  image           String?   // Main product image
+  images          String[]  // Array of product images
+  badge           String?   // E.g., "BEST SELLER", "NEW"
+  tools           String[]  // E.g., ["Pr", "Ae"]
+  features        String[]  // Array of features
+  compatibleWith  String[]  // Array of compatible software
+  driveLink       String?   // Google Drive download link
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  orders          Order[]
+}
+
+model Bundle {
+  id              String    @id
+  dodoProductId String? @unique
+  title           String
+  isFeatured      Boolean   @default(false)
+  desc            String?   // Short description
+  price           Int       // Price in dollars (e.g., 49)
+  originalPrice   Int      // Original price in dollars
+  discount        Int     // Discount percentage
+  badge           String?   // E.g., "BEST SELLER", "NEW"
+  features        String[]  // Array of features
+  driveLink       String?   // Google Drive download link
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  orders          Order[]
+}
+
+model Order {
+  id                String        @id @default(cuid())
+  customerName      String
+  customerEmail     String
+  customerMobile    String
+  dodoPaymentId String? @unique
+  paymentStatus     PaymentStatus @default(PENDING)
+  emailSent         Boolean       @default(false)
+  amount            Int           // Amount
+  productId         String?
+  bundleId          String?
+  product           Product?       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  bundle            Bundle?  @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
